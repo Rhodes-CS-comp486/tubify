@@ -164,3 +164,21 @@ async def get_album_reviews(album_id: str):
         return [dict(review) for review in album_reviews]
     except Exception as e:
         raise HTTPException(status_code=500, detail="Failed to fetch album reviews")
+
+
+# Get top albums (sorted by rating)
+@router.get("/top_albums", response_model=List[AlbumReview])
+async def get_top_albums():
+    try:
+        top_albums = await database.fetch_all(
+            """
+            SELECT album_id, AVG(rating) as average_rating
+            FROM album_reviews
+            GROUP BY album_id
+            ORDER BY average_rating DESC
+            LIMIT 10
+            """
+        )
+        return [dict(album) for album in top_albums]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Failed to fetch top albums")
